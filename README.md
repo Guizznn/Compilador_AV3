@@ -43,7 +43,5 @@ O compilador atualmente suporta:
 
 ### ✔️ Blocos `{}`
 
----
 
-## 📂 Estrutura do Projeto
 
