@@ -1,13 +1,6 @@
-int sum(int a, int b) {
-    int r = a + b;
-    return r;
-}
-
-int main() {
-    int x = 10;
-    int y = sum(x, 20);
-    if (y > 20) {
-        y = y - 1;
-    }
-    return 0;
+main(){
+char car; 
+printf("Digite um caractere e ENTER\n"); 
+scanf("%c", &car);
+printf("Caractere digitado e' %c\n", car);
 }
