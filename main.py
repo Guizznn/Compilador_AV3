@@ -1,4 +1,3 @@
-# main.py
 from lexer import lexer
 # O parser foi importado mas vamos focar na saída Léxica exigida pelo Barema
 # from parser import Parser, pretty 
@@ -11,6 +10,15 @@ def main():
         with open(nome_arquivo, "r", encoding="utf-8") as f:
             code = f.read()
             print(f"--- LENDO ARQUIVO: {nome_arquivo} ---\n")
+            print(code)
+            
+            # Pré-processamento simples: remover diretivas (ex: #include)
+            # A remoção é feita aqui para simplificar o lexer, que não precisa lidar com diretivas.
+            lines = code.split('\n')
+            processed_lines = [line for line in lines if not line.strip().startswith('#')]
+            code = '\n'.join(processed_lines)
+            
+            print("\n--- CÓDIGO APÓS PRÉ-PROCESSAMENTO SIMPLES ---\n")
             print(code)
             print("\n" + "="*40 + "\n")
     except FileNotFoundError:

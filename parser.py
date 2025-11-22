@@ -63,6 +63,21 @@ class ForStatement(Node):
     body: Node
 
 @dataclass
+class SwitchStatement(Node):
+    cond: Node
+    body: Node # CompoundStatement with CaseStatements
+
+@dataclass
+class CaseStatement(Node):
+    expr: Optional[Node] # None for default
+    body: List[Node]
+
+@dataclass
+class DoWhileStatement(Node):
+    body: Node
+    cond: Node
+
+@dataclass
 class ReturnStatement(Node):
     expr: Optional[Node]
 
@@ -253,6 +268,22 @@ class Parser:
             self.expect("RPAREN")
             body = self.parse_statement()
             return WhileStatement(cond, body)
+        if t[0] == "SWITCH":
+            self.next()
+            self.expect("LPAREN")
+            cond = self.parse_expression()
+            self.expect("RPAREN")
+            body = self.parse_compound_statement() # switch body is a compound statement
+            return SwitchStatement(cond, body)
+        if t[0] == "DO":
+            self.next()
+            body = self.parse_statement()
+            self.expect("WHILE")
+            self.expect("LPAREN")
+            cond = self.parse_expression()
+            self.expect("RPAREN")
+            self.expect("SEMICOLON")
+            return DoWhileStatement(body, cond)
         if t[0] == "FOR":
             self.next()
             self.expect("LPAREN")
@@ -301,12 +332,36 @@ class Parser:
         while self.peek()[0] != "RBRACE":
             if self.peek()[0] == "EOF":
                 raise ParseError("Unclosed compound statement")
-            if self.peek()[0] in {"INT","FLOAT","CHAR","DOUBLE","LONG","SHORT","SIGNED","UNSIGNED","CONST","STATIC","TYPEDEF","STRUCT","UNION","ENUM"}:
+            
+            # Handle case/default labels inside a switch body
+            if self.peek()[0] == "CASE" or self.peek()[0] == "DEFAULT":
+                items.append(self.parse_case_statement())
+            elif self.peek()[0] in {"INT","FLOAT","CHAR","DOUBLE","LONG","SHORT","SIGNED","UNSIGNED","CONST","STATIC","TYPEDEF","STRUCT","UNION","ENUM"}:
                 items.append(self.parse_external_declaration())
             else:
                 items.append(self.parse_statement())
         self.expect("RBRACE")
         return CompoundStatement(items)
+
+    def parse_case_statement(self):
+        if self.accept("CASE"):
+            expr = self.parse_expression()
+            self.expect("COLON")
+        elif self.accept("DEFAULT"):
+            expr = None
+            self.expect("COLON")
+        else:
+            raise ParseError(f"Expected CASE or DEFAULT, got {self.peek()}")
+        
+        # Statements following the case/default label
+        body = []
+        while self.peek()[0] not in {"CASE", "DEFAULT", "RBRACE", "EOF"}:
+            if self.peek()[0] in {"INT","FLOAT","CHAR","DOUBLE","LONG","SHORT","SIGNED","UNSIGNED","CONST","STATIC","TYPEDEF","STRUCT","UNION","ENUM"}:
+                body.append(self.parse_external_declaration())
+            else:
+                body.append(self.parse_statement())
+        
+        return CaseStatement(expr, body)
 
     def parse_expression_statement(self):
         if self.peek()[0] == "SEMICOLON":
@@ -525,7 +580,11 @@ class Parser:
         tok = self.peek()
         if tok[0] == "NUMBER":
             self.next()
-            return Constant(int(tok[1]))
+            # Tenta converter para int, se falhar, tenta float
+            try:
+                return Constant(int(tok[1]))
+            except ValueError:
+                return Constant(float(tok[1]))
         if tok[0] == "STRING":
             self.next()
             return Constant(tok[1])
@@ -566,6 +625,19 @@ def pretty(node, indent=0):
         s = pad + "Compound:\n"
         for it in node.items:
             s += pretty(it, indent+1) + "\n"
+        return s
+    if isinstance(node, SwitchStatement):
+        s = pad + f"SwitchStatement: cond={pretty(node.cond)}\n"
+        s += pretty(node.body, indent+1)
+        return s
+    if isinstance(node, CaseStatement):
+        s = pad + f"CaseStatement: expr={pretty(node.expr)}\n"
+        for it in node.body:
+            s += pretty(it, indent+1) + "\n"
+        return s
+    if isinstance(node, DoWhileStatement):
+        s = pad + f"DoWhileStatement: cond={pretty(node.cond)}\n"
+        s += pretty(node.body, indent+1)
         return s
     # default fallback
     return pad + str(node)

@@ -41,7 +41,7 @@ TOKEN_SPEC = [
     # --- Literais ---
     ("STRING", r"\"([^\"\\]|\\.)*\""),
     ("CHAR_LITERAL", r"'([^'\\]|\\.)'"),
-    ("NUMBER", r"\b\d+(\.\d+)?([eE][+-]?\d+)?\b"),
+    ("NUMBER", r"0[xX][0-9a-fA-F]+([uU]|[lL]{1,2})?|\b\d+(\.\d+)?([eE][+-]?\d+)?([uU]|[lL]{1,2})?\b"),
 
     # --- Operadores compostos (tem que vir primeiro!) ---
     ("PLUS_ASSIGN", r"\+="),
@@ -110,6 +110,7 @@ TOKEN_SPEC = [
     # --- Comentários (descartar) ---
     ("COMMENT", r"//.*"),
     ("MULTI_COMMENT", r"/\*[\s\S]*?\*/"),
+    ("PREPROCESSOR", r"#[^\n]*"),
 
     # --- Espaços e quebras de linha ---
     ("SKIP", r"[ \t\n\r]+"),
@@ -123,8 +124,8 @@ def lexer(code):
         kind = match.lastgroup
         value = match.group()
 
-        if kind == "SKIP":
-            continue  # pula espaços
+        if kind == "SKIP" or kind == "COMMENT" or kind == "MULTI_COMMENT" or kind == "PREPROCESSOR":
+            continue  # pula espaços, comentários e diretivas de pré-processador
 
         tokens.append((kind, value))
     return tokens
