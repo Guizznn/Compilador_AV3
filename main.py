@@ -1,19 +1,17 @@
 from lexer import lexer
-# O parser foi importado mas vamos focar na saída Léxica exigida pelo Barema
-# from parser import Parser, pretty 
+from parser import Parser
 
 def main():
     nome_arquivo = "teste.c"
     
-    # 1. PRÉ REQUISITO: LEITURA DO ARQUIVO FONTE
+    
     try:
         with open(nome_arquivo, "r", encoding="utf-8") as f:
             code = f.read()
             print(f"--- LENDO ARQUIVO: {nome_arquivo} ---\n")
             print(code)
             
-            # Pré-processamento simples: remover diretivas (ex: #include)
-            # A remoção é feita aqui para simplificar o lexer, que não precisa lidar com diretivas.
+        
             lines = code.split('\n')
             processed_lines = [line for line in lines if not line.strip().startswith('#')]
             code = '\n'.join(processed_lines)
@@ -25,15 +23,14 @@ def main():
         print(f"ERRO CRÍTICO: Arquivo '{nome_arquivo}' não encontrado.")
         return
 
-    # Executa o analisador léxico
+ 
     tokens = lexer(code)
 
-    # Estruturas para o Barema
+   
     tabela_simbolos = {} 
     lista_tokens_formatada = []
     
-    # Lógica para separar Tokens de Símbolos
-    # Símbolos são apenas os Identificadores (ID) das variáveis/funções
+   
     ordem_simbolo = 1
 
     print(">>> 1. LISTA DOS TOKENS <<<")
@@ -43,16 +40,15 @@ def main():
     for token in tokens:
         tipo, valor = token
         
-        # Imprime na Lista de Tokens
+       
         print(f"{tipo:<20} | {valor}")
         
-        # Lógica da Tabela de Símbolos
-        # Se for um Identificador (ID), vai para a tabela de símbolos
+       
         if tipo == "ID":
             if valor not in tabela_simbolos:
                 tabela_simbolos[valor] = {
                     'ordem': ordem_simbolo,
-                    'tipo': 'IDENTIFICADOR' # Em compiladores simples, começa como genérico
+                    'tipo': 'IDENTIFICADOR' 
                 }
                 ordem_simbolo += 1
 
@@ -68,7 +64,27 @@ def main():
         print(f"{dados['ordem']:<10} | {simbolo:<20} | {dados['tipo']}")
 
     print("\n" + "="*40 + "\n")
-    print("Análise Léxica concluída com sucesso.")
+    
+    
+    print(">>> 3. ANÁLISE SINTÁTICA (PARSER) <<<")
+    
+    try:
+        
+        parser_instance = Parser(tokens)
+        
+       
+        ast_root = parser_instance.parse()
+        
+        print("\n--- ÁRVORE DE SINTAXE ABSTRATA (AST) ---\n")
+      
+        print((ast_root))
+
+    except Exception as e:
+        print(f"\nERRO DE PARSING: {e}")
+        
+    print("\n" + "="*40 + "\n")
+    print("Análise Léxica e Sintática concluídas com sucesso.")
+
 
 if __name__ == "__main__":
     main()
