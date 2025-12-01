@@ -1,17 +1,13 @@
 import re
 
-
 TOKEN_SPEC = [
-
    
-    ("COMMENT", r"//.*"),
+    ("SKIP", r"[ \t\n\r]+"),
     ("MULTI_COMMENT", r"/\*[\s\S]*?\*/"),
+    ("COMMENT", r"//.*"),
     ("PREPROCESSOR", r"#[^\n]*"),
 
- 
-    ("SKIP", r"[ \t\n\r]+"),
-
-
+    
     ("AUTO", r"auto\b"),
     ("BREAK", r"break\b"),
     ("CASE", r"case\b"),
@@ -47,18 +43,12 @@ TOKEN_SPEC = [
     ("VOLATILE", r"volatile\b"),
     ("WHILE", r"while\b"),
 
-
+    
     ("STRING", r"\"([^\"\\]|\\.)*\""),
     ("CHAR_LITERAL", r"'([^'\\]|\\.)'"),
     ("NUMBER", r"0[xX][0-9a-fA-F]+([uU]|[lL]{1,2})?|\b\d+(\.\d+)?([eE][+-]?\d+)?([uU]|[lL]{1,2})?\b"),
 
-    ("EQ", r"=="),
-    ("NEQ", r"!="),
-    ("LE", r"<="),
-    ("GE", r">="),
-    ("SHIFT_LEFT_ASSIGN", r"<<="),
-    ("SHIFT_RIGHT_ASSIGN", r">>="),
-
+    
     ("PLUS_ASSIGN", r"\+="),
     ("MINUS_ASSIGN", r"-="),
     ("MUL_ASSIGN", r"\*="),
@@ -67,12 +57,16 @@ TOKEN_SPEC = [
     ("BIT_AND_ASSIGN", r"&="),
     ("BIT_OR_ASSIGN", r"\|="),
     ("BIT_XOR_ASSIGN", r"\^="),
-
+    ("SHIFT_LEFT_ASSIGN", r"<<="),
+    ("SHIFT_RIGHT_ASSIGN", r">>="),
 
     ("INCREMENT", r"\+\+"),
     ("DECREMENT", r"--"),
 
-
+    ("EQUAL", r"=="),
+    ("NOT_EQUAL", r"!="),
+    ("GREATER_EQUAL", r">="),
+    ("LESS_EQUAL", r"<="),
 
     ("LOGICAL_AND", r"&&"),
     ("LOGICAL_OR", r"\|\|"),
@@ -82,16 +76,12 @@ TOKEN_SPEC = [
 
     ("ARROW", r"->"),
 
-   
-    ("LT", r"<"),
-    ("GT", r">"),
-
+    
     ("PLUS", r"\+"),
     ("MINUS", r"-"),
     ("MULTIPLY", r"\*"),
     ("DIVIDE", r"/"),
     ("MOD", r"%"),
-
     ("ASSIGN", r"="),
 
     ("AND", r"&"),
@@ -100,7 +90,8 @@ TOKEN_SPEC = [
     ("NOT", r"!"),
     ("TILDE", r"~"),
 
-
+    ("GREATER", r">"),
+    ("LESS", r"<"),
 
     ("QUESTION", r"\?"),
     ("COLON", r":"),
@@ -108,11 +99,8 @@ TOKEN_SPEC = [
     
     ("SEMICOLON", r";"),
     ("COMMA", r","),
-
-    ("ELLIPSIS", r"\.\.\."),
     ("DOT", r"\."),
-
-
+    ("ELLIPSIS", r"\.\.\."),
 
     ("LPAREN", r"\("),
     ("RPAREN", r"\)"),
@@ -125,7 +113,6 @@ TOKEN_SPEC = [
     ("ID", r"[A-Za-z_]\w*"),
 ]
 
-
 token_regex = re.compile("|".join(f"(?P<{name}>{pattern})" for name, pattern in TOKEN_SPEC))
 
 def lexer(code):
@@ -134,9 +121,8 @@ def lexer(code):
         kind = match.lastgroup
         value = match.group()
 
-        if kind in ("SKIP", "COMMENT", "MULTI_COMMENT", "PREPROCESSOR"):
+        if kind in {"SKIP", "COMMENT", "MULTI_COMMENT", "PREPROCESSOR"}:
             continue  
 
         tokens.append((kind, value))
     return tokens
-

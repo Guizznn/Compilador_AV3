@@ -1,13 +1,11 @@
-int soma(int a, int b) {
-    return a + b;
-}
+void main() {
+    float nota1 = 8.5;
+    float nota2 = 7.0;
+    float nota3 = 9.2;
 
-int main() {
-    int x = soma(1, 2);
-    if (x > 0) {
-        x = x - 1;
-    } else {
-        x = x + 1;
-    }
-    return 0;
+        float media;
+
+      media = (nota1 + nota2 + nota3) / 3.0; 
+
+      printf("A Média das 3 notas é: %.2f\n", media);    
 }
